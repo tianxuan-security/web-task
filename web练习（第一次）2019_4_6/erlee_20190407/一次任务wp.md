@@ -317,7 +317,8 @@ base64.decode后得到密码 `test123`。
 
 
 
-emmmmmm 我是改完ip 爆破的
+emmmmmm 抓包后就可以看到返回的数据里面就有个base64 的字符 也就是test123
+
 
 ## 8、
 
