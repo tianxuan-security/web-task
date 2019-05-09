@@ -265,7 +265,7 @@ echo serialize($a);
 
 
 
-# web23
+# web23 `爆破`
 http://123.206.31.85:10023/
 http://123.206.31.85:10023/robots.txt
 http://123.206.31.85:10023/readme.txt
@@ -283,6 +283,10 @@ admin
 http://123.206.31.85:10023/1.png
 ```
 http://123.206.31.85:10023/admin/login.php
+http://123.206.31.85:10023/admin/login.html
+admin
+密码三位数字
+bp爆破
 
 
 # web7 `修改响应头`
