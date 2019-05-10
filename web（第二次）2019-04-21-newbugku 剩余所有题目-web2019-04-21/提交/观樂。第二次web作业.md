@@ -217,7 +217,7 @@ if(isset($user)&&(file_get_contents($user,'r')==="admin")){
 
 ![](https://i.loli.net/2019/05/10/5cd542bb03d4a.png)
 
-可以看到在输出反序列化对象时`__toString()`这个函数就被调用了，所以传入构造的序列化对象就得到flag了：
+可以看到在输出经过反序列化后的对象（也就是相当于直接输出原对象）时`__toString()`这个函数就被调用了，所以传入构造的序列化对象就得到flag了：
 
 ![](https://i.loli.net/2019/05/10/5cd552b45e5ac.png)
 
